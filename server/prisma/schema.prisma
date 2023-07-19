@@ -1,0 +1,79 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AdminStatus {
+  active
+  inactive
+  deactivated
+}
+
+model Admin {
+  id           String      @id() @default(uuid())
+  firstName    String
+  lastName     String
+  username     String      @unique
+  email        String      @unique @db.VarChar(320)
+  password     String
+  status       AdminStatus @default(inactive)
+  lastLoggedIn DateTime    @default(now())
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model Family {
+  id        String   @id() @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Member    Member[]
+}
+
+enum MembershipStatus {
+  registered
+  unregistered
+  relocated
+  excommunicated
+}
+
+enum EmploymentStatus {
+  student
+  employed
+  unemployed
+}
+
+enum MaritalStatus {
+  single
+  married
+  widow
+}
+
+model Member {
+  id               String           @id @default(uuid())
+  firstName        String
+  middleName       String?
+  lastName         String
+  age              Int
+  email            String           @unique @db.VarChar(320)
+  phoneNumber      String           @unique
+  address          String
+  password         String
+  membershipStatus MembershipStatus @default(unregistered)
+  employmentStatus EmploymentStatus @default(employed)
+  maritalStatus    MaritalStatus    @default(single)
+  dateOfBirth      DateTime         @db.Date
+  anniversary      DateTime         @db.Date
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  family   Family @relation(fields: [familyId], references: [id])
+  familyId String
+}
