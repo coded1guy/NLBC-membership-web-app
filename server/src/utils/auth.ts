@@ -1,4 +1,5 @@
-import jwt from 'jsonwebtoken'
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 
 export const createJWT = (type, user) => {
     if(type === "admin") {
@@ -41,4 +42,13 @@ export const checkAuthorization = (req, res, next) => {
         res.json({ message: "Access denied! Bad authorization token." });
         return;
     }
+}
+
+// PASSWORDS
+export const hashPassword = (password) => {
+    return bcrypt.hash(password, 5);
+}
+
+export const comparePassword = (password, hash) => {
+    return bcrypt.compare(password, hash);
 }
