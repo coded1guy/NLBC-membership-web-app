@@ -74,6 +74,6 @@ model Member {
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 
-  family   Family @relation(fields: [familyId], references: [id])
-  familyId String
+  family   Family? @relation(fields: [familyId], references: [id])
+  familyId String?
 }
