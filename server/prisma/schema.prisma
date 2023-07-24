@@ -63,7 +63,7 @@ model Member {
   lastName         String
   age              Int
   email            String           @unique @db.VarChar(320)
-  phoneNumber      String           @unique
+  phoneNumber      String           @unique @db.VarChar(15)
   address          String
   password         String
   membershipStatus MembershipStatus @default(unregistered)
