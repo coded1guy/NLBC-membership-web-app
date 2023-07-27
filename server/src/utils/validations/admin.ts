@@ -1,4 +1,4 @@
-import { body } from "express-validator";
+import { body, param } from "express-validator";
 
 // ALL ADMIN ROUTE INPUT VALIDATION
 // createAdmin route
@@ -7,13 +7,14 @@ export const createAdminInputValidation = [
     .withMessage('First name must be a string!'),
     body('lastName', 'Last name is required!').notEmpty().isString().escape()
     .withMessage('Last name must be a string!'),
-    body('username', 'Username is required!').notEmpty().escape()
+    body('username', 'Username is required!').notEmpty().isString().escape()
     .withMessage('Username must be a string!'),
-    body('email', 'Email is required!').notEmpty().isEmail().escape()
+    body('email', 'Email is required!').notEmpty().isString().isEmail().escape()
     .withMessage('Not a valid email address!'),
-    body('password', 'Password is required!').notEmpty().isStrongPassword().escape()
+    body('password', 'Password is required!').notEmpty().isString().isStrongPassword().escape()
     .withMessage('Password is not strong enough!'),
-    body('status', 'Status is required!').isIn([ 'active', 'inactive', 'deactivated' ]).escape()
+    body('status', 'Status is required!').isString()
+    .isIn([ 'active', 'inactive', 'deactivated' ]).escape()
     .withMessage(
         `Status must be a string and have a value of \'active\', \'inactive\' or \'deactivated\'!`
     )
@@ -44,14 +45,24 @@ export const logAdminInInputValidation = [
     .withMessage('Password must be a string!'),
 ];
 // update admin route
-// export const updateAdminInput = () => {
-//     const firstName = body('firstName').isString().optional({nullable: true}).escape();
-//     const lastName = body('lastName').isString().optional({nullable: true}).escape();
-//     const userName = body('username').isString().optional({nullable: true}).escape();
-//     const email = body('email').isEmail().optional({nullable: true}).escape();
-//     const password = body('password').isString().isStrongPassword().optional({nullable: true})
-//     .escape();
-//     const status = body('status').isIn([ 'active', 'inactive', 'deactivated' ])
-//     .optional({nullable: true}).escape();
-//     return [ firstName, lastName, userName, email, password, status ];
-// }
+export const updateAdminInputValidation = [
+    body('firstName').notEmpty().isString().optional({nullable: true, checkFalsy: true}).escape()
+    .withMessage('First name must be a string!'),
+    body('lastName').notEmpty().isString().optional({nullable: true, checkFalsy: true}).escape()
+    .withMessage('Last name must be a string!'),
+    body('username').isString().optional({nullable: true, checkFalsy: true}).escape()
+    .withMessage('username must be a string!'),
+    body('email').isString().isEmail().optional({nullable: true, checkFalsy: true}).escape()
+    .withMessage('Email is not a valid email!'),
+    body('password').notEmpty().isString().optional({nullable: true, checkFalsy: true}).escape()
+    .withMessage('Password must be a string!'),
+    body('status').isString().isIn([ 'active', 'inactive', 'deactivated' ])
+    .optional({nullable: true, checkFalsy: true}).escape()
+    .withMessage(
+        `Status must be a string and have a value of \'active\', \'inactive\' or \'deactivated\'!`
+    )
+];
+export const adminRouteParamsValidation = [
+    // parameter input
+    param('id', 'An Id must be provided!').notEmpty().isString().withMessage('Invalid id!'),
+]
