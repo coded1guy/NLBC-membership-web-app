@@ -6,7 +6,7 @@ import { body } from "express-validator";
 import router from './router';
 import { checkAuthorization } from './utils/auth';
 import { createAdminInputValidation, logAdminInInputValidation } from './utils/validations/admin';
-import { resolveValidation } from './utils/validations/resolveValidation';
+import { resolveValidation } from './utils/validations';
 import { createMember, logMemberIn } from './handlers/member';
 import { createAdmin, logAdminIn } from './handlers/admin';
 

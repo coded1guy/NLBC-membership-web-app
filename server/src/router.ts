@@ -1,4 +1,7 @@
 import { Router } from "express";
+import { updateAdminInputValidation } from "./utils/validations/admin";
+import { paramsValidation, resolveValidation } from "./utils/validations";
+import { updateAdmin } from "./handlers/admin";
 const router = Router();
 
 // all member-related routes
@@ -12,8 +15,13 @@ router.delete('/allMember', (req, res) => {})
 
 // all admin-focused routes
 router.get('/allAdmin', (req, res) => {})
-router.get('/admin/:id', (req, res) => {})
-router.put('/admin/:id', (req, res) => {})
-router.delete('/admin/:id', (req, res) => {})
+router.get('/admin/:id', paramsValidation, resolveValidation, (req, res) => {})
+router.put(
+    '/admin', 
+    updateAdminInputValidation, 
+    resolveValidation, 
+    updateAdmin
+);
+router.delete('/admin/:id', paramsValidation, resolveValidation, (req, res) => {})
 
 export default router;
