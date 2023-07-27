@@ -1,4 +1,4 @@
-import { body, param } from "express-validator";
+import { body } from "express-validator";
 
 // ALL ADMIN ROUTE INPUT VALIDATION
 // createAdmin route
@@ -62,7 +62,3 @@ export const updateAdminInputValidation = [
         `Status must be a string and have a value of \'active\', \'inactive\' or \'deactivated\'!`
     )
 ];
-export const adminRouteParamsValidation = [
-    // parameter input
-    param('id', 'An Id must be provided!').notEmpty().isString().withMessage('Invalid id!'),
-]
