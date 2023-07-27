@@ -110,3 +110,30 @@ export const logAdminIn = async (req, res) => {
         data: { token: createJWT("admin", admin), user: currentAdmin } 
     })
 }
+// Handler for Updating an admin
+export const updateAdmin = async (req, res) => {
+    const { firstName, lastName, username, email, password, status } = req.body;
+    // contingency input validation
+    if(!(firstName || lastName || username || email || password || status)) {
+        res.status(400).json({ message: "No input for update was provided!" })
+        return;
+    }
+    let admin;
+    try {
+        admin = await prisma.admin.update({
+            where: {
+                id: req.user.id
+            },
+            data: req.body
+        })
+    } catch(e) {
+        console.error(e);
+        res.status(404).json({ message: "couldn't update admin!", error: e });
+        return;
+    }
+    if(password || email || username) {
+        res.status(200).json({ message: "Updated admin successfully. Login required!", login: true, admin: admin });
+    } else {
+        res.status(200).json({ message: "Updated admin successfully.", login: false, admin: admin });
+    }
+}
