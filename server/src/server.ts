@@ -9,6 +9,7 @@ import { createAdminInputValidation, logAdminInInputValidation } from './utils/v
 import { resolveValidation } from './utils/validations';
 import { createMember, logMemberIn } from './handlers/member';
 import { createAdmin, logAdminIn } from './handlers/admin';
+import errorHandler from './handlers/errorHandler';
 
 const app = express();
 
@@ -30,5 +31,8 @@ app.post('/logAdminIn', logAdminInInputValidation, resolveValidation, logAdminIn
 
 // auth-required paths
 app.use('/api', checkAuthorization, router);
+
+// error handler
+app.use(errorHandler);
 
 export default app;
