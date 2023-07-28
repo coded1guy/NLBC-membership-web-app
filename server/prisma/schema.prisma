@@ -12,8 +12,12 @@ datasource db {
 
 enum AdminStatus {
   active
-  inactive
   deactivated
+}
+
+enum Role {
+  super
+  normal
 }
 
 model Admin {
@@ -23,7 +27,8 @@ model Admin {
   username     String      @unique
   email        String      @unique @db.VarChar(320)
   password     String
-  status       AdminStatus @default(inactive)
+  role         Role        @default(normal)
+  status       AdminStatus @default(active)
   lastLoggedIn DateTime    @default(now())
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
