@@ -1,34 +1,31 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 
-export const createJWT = (type, user) => {
+export const createJWT = (user:object, type:string = "member") => {
+    let userObject:object;
     if(type === "admin") {
-        return jwt.sign(
-            { id: user.id, username: user.username, email: user.email },
-            process.env.JWT_SECRET
-        )
-    } else if(type === "member") {
-        return jwt.sign(
-            { id: user.id, email: user.email },
-            process.env.JWT_SECRET
-        )
+        userObject = { id: user["id"], username: user["username"], email: user["email"] };
+    } else {
+        userObject  = { id: user["id"], email: user["email"] };
     }
+    return jwt.sign( userObject, process.env.JWT_SECRET, { expiresIn: '1h' } );
 }
 
 export const checkAuthorization = (req, res, next) => {
     const bearer = req.headers.authorization;
 
-    if(!bearer) {
-        res.status(401);
-        res.json({ message: "Access denied! No authorization header." });
+    const sendError = (message) => {
+        res.status(401).json({ message });
         return;
+    }
+
+    if(!bearer) {
+        sendError("Access denied! No authorization header.");
     }
 
     const bearerArr = bearer.split(' ');
     if(bearerArr.length !== 2) {
-        res.status(401);
-        res.json({ message: "Access denied! Bad authorization header." });
-        return;
+        sendError("Access denied! Bad authorization header.");
     }
 
     try {
@@ -38,9 +35,7 @@ export const checkAuthorization = (req, res, next) => {
 
     } catch(e) {
         console.error(e);
-        res.status(401);
-        res.json({ message: "Access denied! Bad authorization token." });
-        return;
+        sendError("Access denied! Bad authorization token.");
     }
 }
 
