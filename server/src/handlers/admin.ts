@@ -1,28 +1,29 @@
+import { Prisma } from "@prisma/client";
 import { comparePassword, createJWT, hashPassword } from "../utils/auth";
 import prisma from "../db";
 
+// Error generator
+const createError = (type, message = 'admin route error.') => {
+    const error = new Error(message);
+    error["scope"] = "admin";
+    error["type"] = type;
+    return error;
+}
+
 // Handler for createAdmin route
-export const createAdmin = async(req, res) => {
+export const createAdmin = async(req, res, next) => {
     // destructuring required input values from the req.body
-    const { 
-        firstName,  
-        lastName, 
-        username, 
-        email, 
-        password, 
-        status
-    } = req.body;
+    const { firstName, lastName, username, email, password, status } = req.body;
     // contingency input validation
-    if(
-        !firstName && !lastName && !username && 
-        !email && !password && !status
-    ) {
-        res.status(400).json({ message: "Required inputs are not provided!" });
+    if(!(firstName && lastName && username && email && password && status)) {
+        const error = createError("noInput", "noInput");
+        next(error);
+        return;
     }
-    let user:object;
+    let admin:object;
     // querying the database
     try {
-        user = await prisma.admin.create({
+        admin = await prisma.admin.create({
             data: {
                 firstName, 
                 lastName, 
@@ -33,31 +34,29 @@ export const createAdmin = async(req, res) => {
             }
         });
     } catch(e) {
-        console.error(e);
-        res.status(409);
-        res.json({ message: "A user with the same unique value already exist.", error: e });
+        e.type = "create";
+        next(e);
         return;
     }
-    const token = createJWT("admin", user);
+    const token = createJWT(admin, "admin");
     res.status(201).json({ token });
 }
 // Handler for logAdminIn route
-export const logAdminIn = async (req, res) => {
-    const {
-        email, 
-        username, 
-        password,
-    } = req.body;
+export const logAdminIn = async (req, res, next) => {
+    const { email, username, password } = req.body;
     // variable declaration
-    let admin, currentAdmin;
+    let admin:object, currentAdmin:object;
     // contingency input validation
-    if(!password && !(email || username)) {
-        res.status(400).json({ message: "Required inputs are not provided!" });
+    if(!(password && (email || username))) {
+        const error = createError("noInput", "noInput");
+        next(error);
+        return;
     }
     // simple function for error handling while querying the db
-    const sendError = function (res, error) {
-        res.status(404)
-        res.json({ message: "admin does not exist", error: error })
+    const sendError = function (type, error) {
+        error.scope = "admin";
+        error.type = type;
+        next(error);
         return
     }
     // querying the database
@@ -73,7 +72,7 @@ export const logAdminIn = async (req, res) => {
                     email
                 }
             })
-        } catch(e) { sendError(res, e); }
+        } catch(e) { sendError( 'notExist', e ); }
     } else if (username) {
         try {
             admin = await prisma.admin.findUnique({
@@ -81,56 +80,62 @@ export const logAdminIn = async (req, res) => {
                     username
                 }
             })
-        } catch(e) { sendError(res, e); }
+        } catch(e) { sendError( 'notExist', e ); }
     }
+    // check admin status - only admin with a status 'active' can login
+    if(admin["status"] !== 'active') { sendError('forbidden', new Error("Not an active admin")) };
     // check password
-    const isValid = await comparePassword(password, admin.password);
-    if(!isValid) {
-        res.status(401)
-        res.json({ message: "Password is not correct. Try again." })
-        return
-    }
+    const isValid = await comparePassword(password, admin["password"]);
+    if(!isValid) { sendError('password', new Error("Incorrect password!")) };
     // update the value of the lastLoggedIn
-    const today = new Date();
     try {
+        const today = new Date();
         currentAdmin = await prisma.admin.update({
             where: { 
-                email: admin.email
+                email: admin["email"]
             },
             data: {
                 lastLoggedIn: today.toISOString()
             }
         })
-    } catch(e) {
-        console.error(e);
-    }
+    } catch(e) { sendError('', new Error("an Error occurred while logging in.")) };
     // response
     res.json({ 
-        message: `admin ${admin.username} is logged in successfully.`, 
-        data: { token: createJWT("admin", admin), user: currentAdmin } 
+        message: `admin ${admin["username"]} is logged in successfully.`, 
+        data: { token: createJWT(admin, "admin"), user: currentAdmin } 
     })
 }
-// Handler for Updating an admin
-export const updateAdmin = async (req, res) => {
+// Handler for admin to update themselve
+export const updateAdmin = async (req, res, next) => {
     const { firstName, lastName, username, email, password, status } = req.body;
+    // simple function for error handling while querying the db
+    const sendError = function (type, error) {
+        error["scope"] = "admin";
+        error["type"] = type;
+        next(error);
+        return
+    }
     // contingency input validation
     if(!(firstName || lastName || username || email || password || status)) {
-        res.status(400).json({ message: "No input for update was provided!" })
-        return;
+        sendError("noInput", new Error("no Input"));
     }
-    let admin;
+    // initialise variables
+    const { id } = req.params;
+    let admin:object | null, where:Prisma.AdminWhereUniqueInput;
+    // defining the where object
+    if(!id) {
+        where = { id: req.user.id };
+    } else if(id) {
+        where = { id };
+    }
+    // making an update query
     try {
         admin = await prisma.admin.update({
-            where: {
-                id: req.user.id
-            },
+            where,
             data: req.body
         })
-    } catch(e) {
-        console.error(e);
-        res.status(404).json({ message: "couldn't update admin!", error: e });
-        return;
-    }
+    } catch(e) { sendError("update", e) };
+    // checking if there is a need for the user to re-login
     if(password || email || username) {
         res.status(200).json({ message: "Updated admin successfully. Login required!", login: true, admin: admin });
     } else {
