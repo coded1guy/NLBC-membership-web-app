@@ -16,16 +16,17 @@ export const checkAuthorization = (req, res, next) => {
 
     const sendError = (message) => {
         res.status(401).json({ message });
-        return;
     }
 
     if(!bearer) {
         sendError("Access denied! No authorization header.");
+        return;
     }
 
     const bearerArr = bearer.split(' ');
     if(bearerArr.length !== 2) {
         sendError("Access denied! Bad authorization header.");
+        return;
     }
 
     try {
@@ -36,6 +37,7 @@ export const checkAuthorization = (req, res, next) => {
     } catch(e) {
         console.error(e);
         sendError("Access denied! Bad authorization token.");
+        return;
     }
 }
 

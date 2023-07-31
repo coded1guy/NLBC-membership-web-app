@@ -54,6 +54,8 @@ export const updateAdminInputValidation = [
     .withMessage('username must be a string!'),
     body('email').isString().isEmail().optional({nullable: true, checkFalsy: true}).escape()
     .withMessage('Email is not a valid email!'),
+    body('oldPassword').notEmpty().isString().optional({nullable: true, checkFalsy: true}).escape()
+    .withMessage('Password must be a string!'),
     body('password').notEmpty().isString().optional({nullable: true, checkFalsy: true}).escape()
     .withMessage('Password must be a string!'),
     body('status').isString().isIn([ 'active', 'inactive', 'deactivated' ])
