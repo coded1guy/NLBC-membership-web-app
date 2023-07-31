@@ -99,7 +99,6 @@ export const logAdminIn = async (req, res, next) => {
         sendError( 'notExist', e ); 
         return;
     }
-    console.log(admin);
     // check admin status - only admin with a status 'active' can login
     if(admin["status"] !== 'active') { 
         sendError('forbidden', new Error("Not an active admin"));
