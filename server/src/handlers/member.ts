@@ -35,7 +35,7 @@ export const createMember = async(req, res) => {
         }
     })
 
-    const token = createJWT("member", user);
+    const token = createJWT(user);
     res.json({ token })
 }
 
@@ -60,5 +60,5 @@ export const logMemberIn = async (req, res) => {
         return
     }
 
-    res.json({ message: { token: createJWT("member", member), member } })
+    res.json({ message: { token: createJWT(member), member } })
 }
