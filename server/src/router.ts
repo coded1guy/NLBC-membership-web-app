@@ -25,7 +25,7 @@ router.put(
     updateAdmin
 );
 router.put(
-    '/admin:id', 
+    '/admin/:id', 
     paramsValidation, 
     updateAdminInputValidation, 
     resolveValidation, 
