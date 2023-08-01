@@ -5,20 +5,11 @@ import { defineError, defineCatchType } from "../utils/defineError";
 
 // declared error scope
 const scope = "admin";
-// normal Admin Select
-const adminSelect:Prisma.AdminSelect = {
-    id: true,
-    firstName: true,
-    lastName: true,
-    username: true,
-    password: false,
-    email: true,
-    role: true,
-    status: true
-}
 
 // Handler for createAdmin route
 export const createAdmin = async(req, res, next) => {
+    // declaring and initializing variables
+    let admin:object;
     // destructuring required input values from the req.body
     const { firstName, lastName, username, email, password, status } = req.body;
     // simple function for error handling while querying the db
@@ -26,13 +17,6 @@ export const createAdmin = async(req, res, next) => {
         error = defineError(scope, type, error);
         next(error);
     }
-    // contingency input validation
-    if(!(firstName && lastName && username && email && password && status)) {
-        const error = defineError(scope, "noInput", null);
-        next(error);
-        return;
-    }
-    let admin:object;
     // querying the database
     try {
         admin = await prisma.admin.create({
@@ -49,38 +33,36 @@ export const createAdmin = async(req, res, next) => {
         sendError(defineCatchType(e, "create"), e);
         return;
     }
+    // success output
     const token = createJWT(admin, "admin");
     res.status(201).json({ token });
     return;
 }
+
 // Handler for logAdminIn route
 export const logAdminIn = async (req, res, next) => {
-    const { email, username, password } = req.body;
-    // variable declaration
+    // declaring and initializing variables
     let admin:object | null, currentAdmin:object;
     let where:Prisma.AdminWhereUniqueInput;
+    // destructuring required input values from the req.body
+    const { email, username, password } = req.body;
     // simple function for error handling while querying the db
     const sendError = function (type, error) {
         error = defineError(scope, type, error);
         next(error);
     }
-    // contingency input validation
-    if(!(password && (email || username))) {
-        sendError("noInput", null);
-        return;
-    }
-    // querying the database
     /*
         there are two different ways to login to the admin:
         - Using username
         - Using email address
     */
+    // setting the where object
     if(email) {
         where = { email };
     } else if (username) {
         where = { username };
     }
-    // db query
+    // querying the database
     try {
         admin = await prisma.admin.findUnique({
             where
@@ -90,7 +72,7 @@ export const logAdminIn = async (req, res, next) => {
             sendError("get", null);
             return;
         }
-    } catch(e) { 
+    } catch(e) {
         sendError(defineCatchType(e, "get"), e);
         return;
     }
@@ -115,7 +97,16 @@ export const logAdminIn = async (req, res, next) => {
             data: {
                 lastLoggedIn: today.toISOString()
             },
-            select: adminSelect
+            select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                username: true,
+                password: false,
+                email: true,
+                role: true,
+                status: true
+            }
         })
     } catch(e) { 
         sendError(defineCatchType(e, "get"), e);
@@ -128,23 +119,20 @@ export const logAdminIn = async (req, res, next) => {
     })
     return;
 }
+
 // Handler for admin to update themselve
 export const updateAdmin = async (req, res, next) => {
+    // declaring and initializing variables
+    const { id } = req.params;
+    let requestBody:object = {};
+    let admin:object | null, where:Prisma.AdminWhereUniqueInput;
+    // destructuring required input values from the req.body
     const { firstName, lastName, username, email, oldPassword, password, status } = req.body;
     // simple function for error handling while querying the db
     const sendError = function (type, error) {
         error = defineError(scope, type, error);
         next(error);
     }
-    // contingency input validation
-    if(!(firstName || lastName || username || email || oldPassword || password || status)) {
-        sendError("no Input", null);
-        return;
-    }
-    // initialise variables
-    const { id } = req.params;
-    let requestBody:object = {};
-    let admin:object | null, where:Prisma.AdminWhereUniqueInput;
     // checking through the allowed inputs
     if(firstName) requestBody["firstName"] = firstName;
     if(lastName) requestBody["lastName"] = lastName;
@@ -170,15 +158,19 @@ export const updateAdmin = async (req, res, next) => {
         return;
     };
     // checking if there is a need for the user to re-login
+    let login:boolean, extraUpdateMsg:string;
     if(password || email || username) {
-        res.status(200).json({ message: "Updated admin successfully. Login required!", login: true, admin: admin });
+        extraUpdateMsg = " Login required!";
+        login: true;
     } else {
-        res.status(200).json({ message: "Updated admin successfully.", login: false, admin: admin });
+        login: false;
     }
+    res.status(200).json({ message: `Updated admin successfully.${extraUpdateMsg}`, login, admin: admin });
     return;
 }
 // Handler for the super admin to get an admin
 export const getAnAdmin = async(req, res, next) => {
+    // declaring and initializing variables
     const { id } = req.params;
     let admin:object;
     // simple function for error handling while querying the db
@@ -186,7 +178,7 @@ export const getAnAdmin = async(req, res, next) => {
         error = defineError(scope, type, error, message);
         next(error);
     }
-    // db query
+    // querying the database
     try {
         admin = await prisma.admin.findUnique({
             where: { id }
@@ -200,7 +192,7 @@ export const getAnAdmin = async(req, res, next) => {
         sendError(defineCatchType(e, "get"), e);
         return;
     }
-
+    // success output
     res.status(200).json({
         message: "Admin was gotten successfully.",
         data: admin
@@ -209,12 +201,14 @@ export const getAnAdmin = async(req, res, next) => {
 }
 // Handler for the super admin to get all admins
 export const getAllAdmin = async(req, res, next) => {
+    // declaring and initializing variables
     let admin;
     // simple function for error handling while querying the db
     const sendError = function (type, error) {
         error = defineError(scope, type, error);
         next(error);
     }
+    // querying the database
     try {
         admin = await prisma.admin.findMany();
 
@@ -235,6 +229,7 @@ export const getAllAdmin = async(req, res, next) => {
 }
 // Handler for the super admin to delete an admin
 export const deleteAnAdmin = async(req, res, next) => {
+    // declaring and initializing variables
     const { id } = req.params;
     let admin:object | null;
     // simple function for error handling while querying the db
@@ -242,6 +237,7 @@ export const deleteAnAdmin = async(req, res, next) => {
         error = defineError(scope, type, error);
         next(error);
     }
+    // querying the database
     try {
         admin = await prisma.admin.delete({
             where: { id }
