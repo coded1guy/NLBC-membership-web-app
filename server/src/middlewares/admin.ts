@@ -1,8 +1,6 @@
 import prisma from "../db"
 // must be admin protector
 export const mustBeMaster = async(req, res, next) => {
-    const { id } = req.params;
-
     try {
         const admin = await prisma.admin.findUnique({
             where: {
