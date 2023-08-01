@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { updateAdminInputValidation } from "./utils/validations/admin";
 import { paramsValidation, resolveValidation } from "./utils/validations";
-import { updateAdmin } from "./handlers/admin";
+import { deleteAnAdmin, getAllAdmin, getAnAdmin, updateAdmin } from "./handlers/admin";
 import errorHandler from "./handlers/errorHandler";
 import { mustBeMaster } from "./middlewares/admin";
 const router = Router();
@@ -16,8 +16,8 @@ router.delete('/member', (req, res) => {})
 router.delete('/allMember', (req, res) => {})
 
 // all admin-focused routes
-router.get('/allAdmin', mustBeMaster, (req, res) => {})
-router.get('/admin/:id', paramsValidation, resolveValidation, mustBeMaster, updateAdmin)
+router.get('/allAdmin', mustBeMaster, getAllAdmin)
+router.get('/admin/:id', paramsValidation, resolveValidation, mustBeMaster, getAnAdmin)
 router.put(
     '/admin', 
     updateAdminInputValidation, 
@@ -32,7 +32,7 @@ router.put(
     mustBeMaster, 
     updateAdmin
 );
-router.delete('/admin/:id', paramsValidation, resolveValidation, mustBeMaster, (req, res) => {})
+router.delete('/admin/:id', paramsValidation, resolveValidation, mustBeMaster, deleteAnAdmin)
 
 
 router.use(errorHandler);

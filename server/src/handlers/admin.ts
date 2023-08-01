@@ -178,3 +178,91 @@ export const updateAdmin = async (req, res, next) => {
         res.status(200).json({ message: "Updated admin successfully.", login: false, admin: admin });
     }
 }
+// Handler for the super admin to get an admin
+export const getAnAdmin = async(req, res, next) => {
+    const { id } = req.params;
+    let admin:object;
+    try {
+        admin = await prisma.admin.findUnique({
+            where: { id }
+        })
+
+        if(admin === null) {
+            res.status(400).json({ message: "Not a valid admin id." });
+            return;
+        }
+    } catch(e) {
+        e.scope = "admin";
+        console.error(e);
+        if(e.statusCode == undefined) {
+            e.type = "server";
+        }
+        e.type = "get";
+        next(e);
+        return;
+    }
+
+    res.status(200).json({
+        message: "Admin was gotten successfully.",
+        data: admin
+    });
+    return;
+}
+// Handler for the super admin to get all admins
+export const getAllAdmin = async(req, res, next) => {
+    let admin;
+    try {
+        admin = await prisma.admin.findMany();
+
+        if(admin === null) {
+            res.status(200).json({ message: "There is no admin in the database." });
+            return;
+        }
+    } catch(e) {
+        e.scope = "admin";
+        console.error(e);
+        if(e.statusCode == undefined) {
+            e.type = "server";
+        }
+        e.type = "get";
+        next(e);
+        return;
+    }
+
+    res.status(200).json({
+        message: "Admin list was gotten successfully.",
+        data: admin
+    });
+    return;
+}
+
+// Handler for the super admin to delete an admin
+export const deleteAnAdmin = async(req, res, next) => {
+    const { id } = req.params;
+    let admin:object;
+    try {
+        admin = await prisma.admin.delete({
+            where: { id }
+        })
+
+        if(admin === null) {
+            res.status(400).json({ message: "Not a valid admin id." });
+            return;
+        }
+    } catch(e) {
+        e.scope = "admin";
+        console.error(e);
+        if(e.statusCode == undefined) {
+            e.type = "server";
+        }
+        e.type = "delete";
+        next(e);
+        return;
+    }
+
+    res.status(200).json({
+        message: "Admin was deleted successfully.",
+        data: admin
+    });
+    return;
+}
