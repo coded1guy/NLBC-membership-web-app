@@ -1,15 +1,10 @@
 import { Prisma } from "@prisma/client";
 import { comparePassword, createJWT, hashPassword } from "../utils/auth";
 import prisma from "../db";
+import { defineError, defineCatchType } from "../utils/defineError";
 
-// Error generator
-const createError = (type, message = 'admin route error.') => {
-    const error = new Error(message);
-    error["scope"] = "admin";
-    error["type"] = type;
-    return error;
-}
-
+// declared error scope
+const scope = "admin";
 // normal Admin Select
 const adminSelect:Prisma.AdminSelect = {
     id: true,
@@ -26,9 +21,14 @@ const adminSelect:Prisma.AdminSelect = {
 export const createAdmin = async(req, res, next) => {
     // destructuring required input values from the req.body
     const { firstName, lastName, username, email, password, status } = req.body;
+    // simple function for error handling while querying the db
+    const sendError = function (type, error) {
+        error = defineError(scope, type, error);
+        next(error);
+    }
     // contingency input validation
     if(!(firstName && lastName && username && email && password && status)) {
-        const error = createError("noInput", "noInput");
+        const error = defineError(scope, "noInput", null);
         next(error);
         return;
     }
@@ -39,39 +39,35 @@ export const createAdmin = async(req, res, next) => {
             data: {
                 firstName, 
                 lastName, 
-                username,
+                username, 
                 email, 
                 password: await hashPassword(password), 
                 status 
             }
         });
     } catch(e) {
-        console.error(e);
-        e.scope = "admin";
-        e.type = "create";
-        next(e);
+        sendError(defineCatchType(e, "create"), e);
         return;
     }
     const token = createJWT(admin, "admin");
     res.status(201).json({ token });
+    return;
 }
 // Handler for logAdminIn route
 export const logAdminIn = async (req, res, next) => {
     const { email, username, password } = req.body;
     // variable declaration
-    let admin:object, currentAdmin:object;
+    let admin:object | null, currentAdmin:object;
     let where:Prisma.AdminWhereUniqueInput;
-    // contingency input validation
-    if(!(password && (email || username))) {
-        const error = createError("noInput", "noInput");
-        next(error);
-        return;
-    }
     // simple function for error handling while querying the db
     const sendError = function (type, error) {
-        error.scope = "admin";
-        error.type = type;
+        error = defineError(scope, type, error);
         next(error);
+    }
+    // contingency input validation
+    if(!(password && (email || username))) {
+        sendError("noInput", null);
+        return;
     }
     // querying the database
     /*
@@ -91,28 +87,27 @@ export const logAdminIn = async (req, res, next) => {
         })
         // if there is no admin
         if(admin === null) {
-            const error = createError('notExist', 'notExist');
-            next(error);
+            sendError("get", null);
             return;
         }
     } catch(e) { 
-        sendError( 'notExist', e ); 
+        sendError(defineCatchType(e, "get"), e);
         return;
     }
     // check admin status - only admin with a status 'active' can login
     if(admin["status"] !== 'active') { 
-        sendError('forbidden', new Error("Not an active admin"));
-        return; 
+        sendError("forbidden", null);
+        return;
     };
     // check password
     const isValid = await comparePassword(password, admin["password"]);
     if(!isValid) { 
-        sendError('password', new Error("Incorrect password!"));
-        return; 
+        sendError("password", null);
+        return;
     };
     // update the value of the lastLoggedIn
     try {
-        const today = new Date();
+        const today:Date = new Date();
         currentAdmin = await prisma.admin.update({
             where: { 
                 id: admin["id"]
@@ -123,28 +118,28 @@ export const logAdminIn = async (req, res, next) => {
             select: adminSelect
         })
     } catch(e) { 
-        sendError('', new Error("an Error occurred while logging in."));
-        return; 
+        sendError(defineCatchType(e, "get"), e);
+        return;
     };
-    // response
+    // success output
     res.json({ 
         message: `admin ${admin["username"]} is logged in successfully.`, 
         data: { token: createJWT(admin, "admin"), admin: currentAdmin } 
     })
+    return;
 }
 // Handler for admin to update themselve
 export const updateAdmin = async (req, res, next) => {
     const { firstName, lastName, username, email, oldPassword, password, status } = req.body;
     // simple function for error handling while querying the db
     const sendError = function (type, error) {
-        error["scope"] = "admin";
-        error["type"] = type;
+        error = defineError(scope, type, error);
         next(error);
-        return
     }
     // contingency input validation
     if(!(firstName || lastName || username || email || oldPassword || password || status)) {
-        sendError("noInput", new Error("no Input"));
+        sendError("no Input", null);
+        return;
     }
     // initialise variables
     const { id } = req.params;
@@ -170,35 +165,39 @@ export const updateAdmin = async (req, res, next) => {
             where,
             data: requestBody
         })
-    } catch(e) { sendError("update", e); return; };
+    } catch(e) {
+        sendError(defineCatchType(e, "update"), e);
+        return;
+    };
     // checking if there is a need for the user to re-login
     if(password || email || username) {
         res.status(200).json({ message: "Updated admin successfully. Login required!", login: true, admin: admin });
     } else {
         res.status(200).json({ message: "Updated admin successfully.", login: false, admin: admin });
     }
+    return;
 }
 // Handler for the super admin to get an admin
 export const getAnAdmin = async(req, res, next) => {
     const { id } = req.params;
     let admin:object;
+    // simple function for error handling while querying the db
+    const sendError = function (type, error, message="") {
+        error = defineError(scope, type, error, message);
+        next(error);
+    }
+    // db query
     try {
         admin = await prisma.admin.findUnique({
             where: { id }
         })
 
         if(admin === null) {
-            res.status(400).json({ message: "Not a valid admin id." });
+            sendError("id", null);
             return;
         }
     } catch(e) {
-        e.scope = "admin";
-        console.error(e);
-        if(e.statusCode == undefined) {
-            e.type = "server";
-        }
-        e.type = "get";
-        next(e);
+        sendError(defineCatchType(e, "get"), e);
         return;
     }
 
@@ -211,55 +210,52 @@ export const getAnAdmin = async(req, res, next) => {
 // Handler for the super admin to get all admins
 export const getAllAdmin = async(req, res, next) => {
     let admin;
+    // simple function for error handling while querying the db
+    const sendError = function (type, error) {
+        error = defineError(scope, type, error);
+        next(error);
+    }
     try {
         admin = await prisma.admin.findMany();
 
         if(admin === null) {
-            res.status(200).json({ message: "There is no admin in the database." });
+            sendError("noList", null);
             return;
         }
     } catch(e) {
-        e.scope = "admin";
-        console.error(e);
-        if(e.statusCode == undefined) {
-            e.type = "server";
-        }
-        e.type = "get";
-        next(e);
+        sendError(defineCatchType(e, "get"), e);
         return;
     }
-
+    // success output
     res.status(200).json({
         message: "Admin list was gotten successfully.",
         data: admin
     });
     return;
 }
-
 // Handler for the super admin to delete an admin
 export const deleteAnAdmin = async(req, res, next) => {
     const { id } = req.params;
-    let admin:object;
+    let admin:object | null;
+    // simple function for error handling while querying the db
+    const sendError = function (type, error) {
+        error = defineError(scope, type, error);
+        next(error);
+    }
     try {
         admin = await prisma.admin.delete({
             where: { id }
         })
 
         if(admin === null) {
-            res.status(400).json({ message: "Not a valid admin id." });
+            sendError("id", null);
             return;
         }
     } catch(e) {
-        e.scope = "admin";
-        console.error(e);
-        if(e.statusCode == undefined) {
-            e.type = "server";
-        }
-        e.type = "delete";
-        next(e);
+        sendError(defineCatchType(e, "delete"), e);
         return;
     }
-
+    // success output
     res.status(200).json({
         message: "Admin was deleted successfully.",
         data: admin
