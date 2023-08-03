@@ -1,23 +1,26 @@
 const errorHandler = (err, req, res, next) => {
-    console.error(err);
+    console.log(err);
     switch (err.type) {
-        case "noInput":
-            res.status(400).json({ message: 'No input provided.' });
+        case "create":
+            res.status(404).json({ message: `Couldn't create ${err.scope}.` });
+            break;
+        case "login":
+            res.status(404).json({ message: `Didn\'t find any admin with the ${err.loginType} provided.` });
+            break;
+        case "get":
+            res.status(400).json({ message: `There is no ${err.scope} with the detail provided.`, error: err });
             break;
         case "badInput":
             res.status(400).json({ message: 'Bad input provided.' });
             break;
         case "password":
-            res.status(401).json({ message: "Password is not correct. Try again." });
+            res.status(401).json({ message: "Password provided is not correct. Try again." });
             break;
         case "forbidden":
             res.status(403).json({ message: `${err.scope} is not allowed to access this resource.` });
             break;
-        case "notExist":
-            res.status(404).json({ message: `${err.scope} does not exist.` });
-            break;
-        case "create":
-            res.status(404).json({ message: `Couldn't create ${err.scope}.` });
+        case "id":
+            res.status(404).json({ message: `${err.scope} with id provided does not exist.` });
             break;
         case "update":
             res.status(404).json({ message: `Couldn't update ${err.scope}.` });
@@ -27,7 +30,7 @@ const errorHandler = (err, req, res, next) => {
         case "server":
             res.status(500).json({ message: "Internal error, check back later." });
         default:
-            res.status(404).json({ message: err.message });
+            res.status(404).json({ message: err.message, error: err });
     }
 }
 export default errorHandler;
