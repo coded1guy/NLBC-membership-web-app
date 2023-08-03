@@ -3,7 +3,7 @@ import cors from 'cors';
 import morgan from 'morgan';
 import { body } from "express-validator";
 
-import router from './router';
+import router from './routes';
 import { checkAuthorization } from './utils/auth';
 import { createAdminInputValidation, logAdminInInputValidation } from './utils/validations/admin';
 import { resolveValidation } from './utils/validations';
