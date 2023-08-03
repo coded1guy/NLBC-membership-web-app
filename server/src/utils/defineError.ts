@@ -15,7 +15,7 @@ export const defineError = (scope:string, type:string, error:object | null, mess
 // define catch block error type
 export const defineCatchType = (e, otherType) => {
     let type:string;
-    if(e.statusCode === undefined) {
+    if(e.hasOwnProperty('errorCode') && (e.errorCode === undefined)) {
         type = "Network"
     } else type = otherType;
     return type;
