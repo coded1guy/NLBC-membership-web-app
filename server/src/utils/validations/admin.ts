@@ -14,9 +14,14 @@ export const createAdminInputValidation = [
     body('password', 'Password is required!').notEmpty().isString().isStrongPassword().escape()
     .withMessage('Password is not strong enough!'),
     body('status', 'Status is required!').isString()
-    .isIn([ 'active', 'inactive', 'deactivated' ]).escape()
+    .isIn([ 'active', 'deactivated' ]).escape()
     .withMessage(
-        `Status must be a string and have a value of \'active\', \'inactive\' or \'deactivated\'!`
+        `Status must be a string and have a value of \'active\' or \'deactivated\'!`
+    ),
+    body('role', 'role is required!').isString()
+    .isIn([ 'super', 'normal' ]).escape()
+    .withMessage(
+        `Role must be a string and have a value of \'super\' or \'normal\'!`
     )
 ];
 // LogAdminIn route
@@ -58,9 +63,9 @@ export const updateAdminInputValidation = [
     .withMessage('Password must be a string!'),
     body('password').notEmpty().isString().optional({nullable: true, checkFalsy: true}).escape()
     .withMessage('Password must be a string!'),
-    body('status').isString().isIn([ 'active', 'inactive', 'deactivated' ])
+    body('status').isString().isIn([ 'active', 'deactivated' ])
     .optional({nullable: true, checkFalsy: true}).escape()
     .withMessage(
-        `Status must be a string and have a value of \'active\', \'inactive\' or \'deactivated\'!`
+        `Status must be a string and have a value of \'active\' or \'deactivated\'!`
     )
 ];

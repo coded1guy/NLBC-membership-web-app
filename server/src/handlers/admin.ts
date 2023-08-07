@@ -11,7 +11,7 @@ export const createAdmin = async(req, res, next) => {
     // declaring and initializing variables
     let admin:object;
     // destructuring required input values from the req.body
-    const { firstName, lastName, username, email, password, status } = req.body;
+    const { firstName, lastName, username, email, password, status, role } = req.body;
     // simple function for error handling while querying the db
     const sendError = function (type, error) {
         error = defineError(scope, type, error);
@@ -26,7 +26,8 @@ export const createAdmin = async(req, res, next) => {
                 username, 
                 email, 
                 password: await hashPassword(password), 
-                status 
+                status,
+                role 
             }
         });
     } catch(e) {
@@ -44,6 +45,7 @@ export const logAdminIn = async (req, res, next) => {
     // declaring and initializing variables
     let admin:object | null, currentAdmin:object;
     let where:Prisma.AdminWhereUniqueInput;
+    let loginType:string = "email";
     // destructuring required input values from the req.body
     const { email, username, password } = req.body;
     // simple function for error handling while querying the db
@@ -59,8 +61,10 @@ export const logAdminIn = async (req, res, next) => {
     // setting the where object
     if(email) {
         where = { email };
+        loginType = "email";
     } else if (username) {
         where = { username };
+        loginType = "username";
     }
     // querying the database
     try {
@@ -69,11 +73,11 @@ export const logAdminIn = async (req, res, next) => {
         })
         // if there is no admin
         if(admin === null) {
-            sendError("get", null);
-            return;
+            throw new Error(`Didn\'t find any admin with the ${loginType} provided.`);
         }
     } catch(e) {
-        sendError(defineCatchType(e, "get"), e);
+        e.loginType = loginType;
+        sendError(defineCatchType(e, "login"), e);
         return;
     }
     // check admin status - only admin with a status 'active' can login
