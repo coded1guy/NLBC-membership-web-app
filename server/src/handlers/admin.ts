@@ -86,11 +86,15 @@ export const logAdminIn = async (req, res, next) => {
         return;
     };
     // check password
-    const isValid = await comparePassword(password, admin["password"]);
-    if(!isValid) { 
-        sendError("password", null);
+    try {
+        const isValid = await comparePassword(password, admin["password"]);
+        if(!isValid) { 
+            throw new Error("Admin password is not correct!");
+        };
+    } catch(e) {
+        sendError("password", e);
         return;
-    };
+    }
     // update the value of the lastLoggedIn
     try {
         const today:Date = new Date();
