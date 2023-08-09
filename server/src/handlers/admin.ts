@@ -166,7 +166,7 @@ export const updateAdmin = async (req, res, next) => {
         return;
     };
     // checking if there is a need for the user to re-login
-    let login:boolean, extraUpdateMsg:string;
+    let login:boolean, extraUpdateMsg:string = "";
     if(password || email || username) {
         extraUpdateMsg = " Login required!";
         login: true;
