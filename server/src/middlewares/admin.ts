@@ -53,7 +53,7 @@ export const isSuperAdmin = async(req, res, next) => {
         if(admin.role === "super") {
             next();
         } else {
-            sendError(null, "Admin is not qualifies to access this resource.", 403);
+            sendError(null, "Admin is not qualified to access this resource.", 403);
             return;
         }
     } catch (e) {
