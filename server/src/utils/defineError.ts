@@ -1,6 +1,6 @@
 // this define the error before it is passed to the error handler
 export const defineError = (scope:string, type:string, error:object | null, message:string ="") => {
-    if(type === null) {
+    if(error === null) {
         error = new Error(`${type} error occured.`);
     }
     // adds cuustom message to the user if they added it
