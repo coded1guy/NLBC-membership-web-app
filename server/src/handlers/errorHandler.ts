@@ -1,11 +1,13 @@
 const errorHandler = (err, req, res, next) => {
+    console.log("error");
     console.log(err);
     switch (err.type) {
         case "create":
             res.status(404).json({ message: `Couldn't create ${err.scope}.` });
             break;
         case "login":
-            res.status(404).json({ message: `Didn\'t find any admin with the ${err.loginType} provided.` });
+            console.log("no login");
+            res.status(400).json({ message: `Didn\'t find any admin with the ${err.loginType} provided.` });
             break;
         case "get":
             res.status(400).json({ message: `There is no ${err.scope} with the detail provided.`, error: err });
@@ -30,6 +32,8 @@ const errorHandler = (err, req, res, next) => {
             break;
         case "delete":
             res.status(404).json({ message: `Couldn't delete ${err.scope}.` });
+        case "Network":
+            res.status(500).json({ message: "Check your connections and try again." });
         case "server":
             res.status(500).json({ message: "Internal error, check back later." });
         default:

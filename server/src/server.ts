@@ -10,6 +10,8 @@ import { createMember, logMemberIn } from './handlers/member';
 // admin only handler function
 import createAdmin from './handlers/admin/createAdmin';
 import logAdminIn from './handlers/admin/logAdminIn';
+// error handler function
+import errorHandler from './handlers/errorHandler';
 
 const app = express();
 
@@ -31,5 +33,6 @@ app.post('/logAdminIn', logAdminInInputValidation, resolveValidation, logAdminIn
 
 // auth-required paths
 app.use('/api', checkAuthorization, router);
+app.use(errorHandler);
 
 export default app;
