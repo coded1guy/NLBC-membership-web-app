@@ -1,15 +1,15 @@
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
-import { body } from "express-validator";
 
 import router from './routes';
 import { checkAuthorization } from './utils/auth';
 import { createAdminInputValidation, logAdminInInputValidation } from './utils/validations/admin';
 import { resolveValidation } from './utils/validations';
 import { createMember, logMemberIn } from './handlers/member';
-import { createAdmin, logAdminIn } from './handlers/admin';
-import errorHandler from './handlers/errorHandler';
+// admin only handler function
+import createAdmin from './handlers/admin/createAdmin';
+import logAdminIn from './handlers/admin/logAdminIn';
 
 const app = express();
 
@@ -31,8 +31,5 @@ app.post('/logAdminIn', logAdminInInputValidation, resolveValidation, logAdminIn
 
 // auth-required paths
 app.use('/api', checkAuthorization, router);
-
-// error handler
-app.use(errorHandler);
 
 export default app;

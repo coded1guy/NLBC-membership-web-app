@@ -1,10 +1,15 @@
 import { Router } from "express";
+import provideInput from "../middlewares/provideInput";
 import { updateAdminInputValidation } from "../utils/validations/admin";
 import { paramsValidation, resolveValidation } from "../utils/validations";
-import { deleteAnAdmin, getAllAdmin, getAnAdmin, updateAdmin } from "../handlers/admin";
-import errorHandler from "../handlers/errorHandler";
 import { isSuperAdmin } from "../middlewares/admin";
-import provideInput from "../middlewares/provideInput";
+import errorHandler from "../handlers/errorHandler";
+// all admin handler function
+import updateAdmin from "../handlers/admin/updateAdmin";
+// super admin only handler function
+import getAnAdmin from "../handlers/admin/getAnAdmin";
+import getAllAdmin from "../handlers/admin/getAllAdmin";
+import deleteAnAdmin from "../handlers/admin/deleteAnAdmin";
 
 const adminRouter = Router();
 
