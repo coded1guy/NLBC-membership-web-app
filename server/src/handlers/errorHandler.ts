@@ -10,6 +10,9 @@ const errorHandler = (err, req, res, next) => {
         case "get":
             res.status(400).json({ message: `There is no ${err.scope} with the detail provided.`, error: err });
             break;
+        case "noList":
+            res.status(400).json({ message: `There is no more list of ${err.scope}s in the database.`, error: err });
+            break;
         case "badInput":
             res.status(400).json({ message: 'Bad input provided.' });
             break;
