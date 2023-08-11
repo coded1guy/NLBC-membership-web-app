@@ -39,7 +39,6 @@ model Family {
   name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  Member    Member[]
 }
 
 enum MembershipStatus {
@@ -63,22 +62,20 @@ enum MaritalStatus {
 
 model Member {
   id               String           @id @default(uuid())
+  profileImageUrl  String?
   firstName        String
   middleName       String?
   lastName         String
-  age              Int
-  email            String           @unique @db.VarChar(320)
+  age              Int?
+  email            String?          @unique @db.VarChar(320)
   phoneNumber      String           @unique @db.VarChar(15)
-  address          String
+  address          String?
   password         String
   membershipStatus MembershipStatus @default(unregistered)
   employmentStatus EmploymentStatus @default(employed)
   maritalStatus    MaritalStatus    @default(single)
-  dateOfBirth      DateTime         @db.Date
-  anniversary      DateTime         @db.Date
+  dateOfBirth      DateTime?        @db.Date
+  anniversary      DateTime?        @db.Date
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
-
-  family   Family? @relation(fields: [familyId], references: [id])
-  familyId String?
 }
