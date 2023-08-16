@@ -1,13 +1,25 @@
 import { Router } from "express";
-// import { updateMemberInputValidation } from "../utils/validations/member";
+// global utils
 import { paramsValidation, resolveValidation } from "../utils/validations";
-import errorHandler from "../handlers/errorHandler";
+// global middleware
 import provideInput from "../middlewares/provideInput";
+// member middleware and handler functions
+import { updateMemberInputValidation } from "../utils/validations/member";
+import updateMember from "../handlers/member/updateMember";
+// error handler
+import errorHandler from "../handlers/errorHandler";
 
 const memberRouter = Router();
 
 // routes accessible by members
-memberRouter.put('/allMember', provideInput, (req, res) => {})
+memberRouter.put(
+    '/member', 
+    provideInput, 
+    paramsValidation, 
+    updateMemberInputValidation, 
+    resolveValidation, 
+    updateMember
+);
 
 memberRouter.use(errorHandler);
 
