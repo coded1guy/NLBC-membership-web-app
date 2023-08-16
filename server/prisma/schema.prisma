@@ -60,6 +60,39 @@ enum MaritalStatus {
   widow
 }
 
+enum HomeFellowship {
+  OKOTA_I
+  OKOTA_II
+  ISOLO_I
+  ISOLO_II
+  ISOLO_III
+  ISOLO_IV
+  MUSHIN
+  AJAO_ESTATE
+  EGBE_I
+  EGBE_II
+  IDIMU
+  OKE_AFA_I
+  OKE_AFA_II
+  OKE_AFA_III
+  OKE_AFA_IV
+  OKE_AFA_V
+  ABULE_IGBIRA
+  JAKANDE_I
+  JAKANDE_II
+  JAKANDE_III
+  JAKANDE_IV
+  BUCKNOR
+  EJIGBO_I
+  EJIGBO_II
+  EJIGBO_III
+  EJIGBO_IV
+  ISHERI_OSUN
+  IJEGUN_I
+  IJEGUN_II
+  ABARANJE
+}
+
 model Member {
   id               String           @id @default(uuid())
   profileImageUrl  String?
@@ -74,6 +107,7 @@ model Member {
   membershipStatus MembershipStatus @default(unregistered)
   employmentStatus EmploymentStatus @default(employed)
   maritalStatus    MaritalStatus    @default(single)
+  homeFellowship   HomeFellowship?
   dateOfBirth      DateTime?        @db.Date
   anniversary      DateTime?        @db.Date
   createdAt        DateTime         @default(now())
