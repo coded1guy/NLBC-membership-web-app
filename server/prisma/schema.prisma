@@ -24,8 +24,8 @@ model Admin {
   id           String      @id() @default(uuid())
   firstName    String
   lastName     String
-  username     String      @unique
-  email        String      @unique @db.VarChar(320)
+  username     String?     @unique
+  email        String?     @unique @db.VarChar(320)
   password     String
   role         Role        @default(normal)
   status       AdminStatus @default(active)
@@ -101,7 +101,7 @@ model Member {
   lastName         String
   age              Int?
   email            String?          @unique @db.VarChar(320)
-  phoneNumber      String           @unique @db.VarChar(15)
+  phoneNumber      String?          @unique @db.VarChar(15)
   address          String?
   password         String
   membershipStatus MembershipStatus @default(unregistered)

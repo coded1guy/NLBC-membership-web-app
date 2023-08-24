@@ -1,16 +1,15 @@
 import prisma from "../db"
 import { defineError } from "../utils/defineError";
+import { adminScope } from "../handlers/admin";
 
-const errorScope:string = "admin", errorType:string = "access";
 const error404msg:string = "An error occurred while validating permission to access this resource.";
 
 // checks if logged in user is an admin
 export const isAdmin = async(req, res, next) => {
     // error message handler
-    const sendError = (error:object | null, message:string, status:number) => {
-        const newError = defineError(errorScope, errorType, error, message);
-        console.error(newError);
-        res.status(status).json({ message, error: newError });
+    const sendError = (type, error:object | null, message:string="") => {
+        const newError = defineError(adminScope, type, error, message);
+        next(newError);
     }
     // check if the user id matches that of an admin
     try {
@@ -20,17 +19,17 @@ export const isAdmin = async(req, res, next) => {
             }
         })
         if(admin === null) {
-            sendError(null, "Only admins can access this resource.", 403);
+            sendError("forbidden", null, "Only admins can access this resource.");
             return;
         }
         if(admin.status === "active") {
             next();
         } else {
-            sendError(null, "Only active admins can access this resource.", 403);
+            sendError("forbidden", null, "Only active admins can access this resource.");
             return;
         }
     } catch (e) {
-        sendError(e, error404msg, 404);
+        sendError("Network", e, error404msg);
         return;
     }
 }
@@ -38,10 +37,9 @@ export const isAdmin = async(req, res, next) => {
 // checks if logged in user is a super admin
 export const isSuperAdmin = async(req, res, next) => {
     // error message handler
-    const sendError = (error:object | null, message:string, status:number) => {
-        const newError = defineError(errorScope, errorType, error, message);
-        console.error(newError);
-        res.status(status).json({ message, error: newError });
+    const sendError = (type, error:object | null, message:string="") => {
+        const newError = defineError(adminScope, type, error, message);
+        next(newError);
     }
     // checks if the admin role is super
     try {
@@ -53,11 +51,11 @@ export const isSuperAdmin = async(req, res, next) => {
         if(admin.role === "super") {
             next();
         } else {
-            sendError(null, "Admin is not qualified to access this resource.", 403);
+            sendError("forbidden", null, "Admin is not qualified to access this resource.");
             return;
         }
     } catch (e) {
-        sendError(e, error404msg, 404);
+        sendError("Network", e, error404msg);
         return;
     }
 }

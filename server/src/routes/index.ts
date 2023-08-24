@@ -1,11 +1,15 @@
 import { Router } from "express";
-import adminRouter from "./admin";
+// admin middleware
+import { isAdmin, isSuperAdmin } from "../middlewares/admin";
+// handlers
 import memberRouter from "./member";
-import { isAdmin } from "../middlewares/admin";
+import adminRouter from "./admin";
+import superRouter from "./super";
 
 const router = Router();
 
 router.use('', isAdmin, adminRouter);
+router.use('', isSuperAdmin, superRouter);
 router.use('', memberRouter);
 
 export default router;

@@ -1,11 +1,12 @@
 import { Router } from "express";
-// global utils
-import { paramsValidation, resolveValidation } from "../utils/validations";
-// global middleware
-import provideInput from "../middlewares/provideInput";
-// member middleware and handler functions
-import { updateMemberInputValidation } from "../utils/validations/member";
+// member validation schema and handler
+import { updateMemberSchema } from "../utils/validations/schemas/member";
+import { memberScope } from "../handlers/member";
 import updateMember from "../handlers/member/updateMember";
+// general id params schema
+import { userIdSchema } from "../utils/validations/schemas";
+// general schema validation middleware
+import schemaValidation from '../middlewares/schemaValidation';
 // error handler
 import errorHandler from "../handlers/errorHandler";
 
@@ -14,10 +15,8 @@ const memberRouter = Router();
 // routes accessible by members
 memberRouter.put(
     '/member', 
-    provideInput, 
-    paramsValidation, 
-    updateMemberInputValidation, 
-    resolveValidation, 
+    [schemaValidation(memberScope, userIdSchema, "params")], 
+    [schemaValidation(memberScope, updateMemberSchema, "body")], 
     updateMember
 );
 

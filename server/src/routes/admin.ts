@@ -1,57 +1,39 @@
 import { Router } from "express";
-import provideInput from "../middlewares/provideInput";
-import { updateAdminInputValidation } from "../utils/validations/admin";
-import { paramsValidation, resolveValidation } from "../utils/validations";
-import { isSuperAdmin } from "../middlewares/admin";
-import errorHandler from "../handlers/errorHandler";
-// admin-related handler function
+// admin-related handler validation schema function
+import { updateAdminSchema } from "../utils/validations/schemas/admin";
+import { adminScope } from "../handlers/admin";
 import updateAdmin from "../handlers/admin/updateAdmin";
-// super-admin-only handler functions
-import getAnAdmin from "../handlers/admin/getAnAdmin";
-import getAllAdmin from "../handlers/admin/getAllAdmin";
-import deleteAnAdmin from "../handlers/admin/deleteAnAdmin";
-// all member-related handler functions
+// all member-related validation schema and handler functions
+import { updateMemberSchema } from "../utils/validations/schemas/member";
+import { memberScope } from "../handlers/member";
 import getMember from "../handlers/member/getMember";
 import deleteMember from "../handlers/member/deleteMember";
 import updateMember from "../handlers/member/updateMember";
 import getAllMembers from "../handlers/member/getAllMembers";
-import { updateMemberInputValidation } from "../utils/validations/member";
+// general id params schema
+import { userIdSchema } from "../utils/validations/schemas";
+// general schema validation middleware
+import schemaValidation from '../middlewares/schemaValidation';
+// error handler
+import errorHandler from "../handlers/errorHandler";
 
 const adminRouter = Router();
 
 // all member-related routes
 adminRouter.get('/member', getAllMembers);
-adminRouter.get('/member/:id', paramsValidation, resolveValidation, getMember);
+adminRouter.get('/member/:id', [schemaValidation(memberScope, userIdSchema, "params")], getMember);
 adminRouter.put(
     '/member/:id', 
-    provideInput,
-    paramsValidation, 
-    updateMemberInputValidation, 
-    resolveValidation, 
+    [
+        schemaValidation(memberScope, userIdSchema, "params"), 
+        schemaValidation(memberScope, updateMemberSchema, "body")
+    ],
     updateMember
 );
-adminRouter.delete('/member:id', paramsValidation, resolveValidation, deleteMember);
+adminRouter.delete('/member:id', [schemaValidation(memberScope, userIdSchema, "params")], deleteMember);
 
 // all admin-focused routes
-adminRouter.get('/admin', isSuperAdmin, getAllAdmin);
-adminRouter.get('/admin/:id', paramsValidation, resolveValidation, isSuperAdmin, getAnAdmin);
-adminRouter.put(
-    '/admin', 
-    provideInput, 
-    updateAdminInputValidation, 
-    resolveValidation, 
-    updateAdmin
-);
-adminRouter.put(
-    '/admin/:id', 
-    provideInput, 
-    paramsValidation, 
-    updateAdminInputValidation, 
-    resolveValidation, 
-    isSuperAdmin, 
-    updateAdmin
-);
-adminRouter.delete('/admin/:id', paramsValidation, resolveValidation, isSuperAdmin, deleteAnAdmin);
+adminRouter.put('/admin', [schemaValidation(adminScope, updateAdminSchema, "body")], updateAdmin);
 
 adminRouter.use(errorHandler);
 

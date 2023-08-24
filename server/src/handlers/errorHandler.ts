@@ -1,7 +1,9 @@
 const errorHandler = (err, req, res, next) => {
-    console.log("error");
     console.log(err);
     switch (err.type) {
+        case "validation":
+            res.status(400).json({ message: `${err.message}`, error: err });
+            break;
         case "create":
             res.status(404).json({ message: `Couldn't create ${err.scope}.` });
             break;
@@ -22,7 +24,7 @@ const errorHandler = (err, req, res, next) => {
             res.status(401).json({ message: "Password provided is not correct. Try again." });
             break;
         case "forbidden":
-            res.status(403).json({ message: `${err.scope} is not allowed to access this resource.` });
+            res.status(403).json({ message: `${err.message}, check back with an admin.` });
             break;
         case "id":
             res.status(404).json({ message: `${err.scope} with id provided does not exist.` });
@@ -33,7 +35,7 @@ const errorHandler = (err, req, res, next) => {
         case "delete":
             res.status(404).json({ message: `Couldn't delete ${err.scope}.` });
         case "Network":
-            res.status(500).json({ message: "Check your connections and try again." });
+            res.status(404).json({ message: "Check your connections and try again." });
         case "server":
             res.status(500).json({ message: "Internal error, check back later." });
         default:
