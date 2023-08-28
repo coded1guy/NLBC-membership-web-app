@@ -39,7 +39,13 @@ const HomeFellowship = [
 ];
 
 // default validation options
-const profileImageUrl = Joi.string().optional(),
+const profileImage = Joi.object({
+    // Allowed image type
+    type: Joi.string().valid('image/jpeg', 'image/jpg', 'image/png').required(),
+
+    // max image size
+    size: Joi.number().max(5 * 1024 * 1024).required(),
+}).optional(),
     firstName = Joi.string(),
     middleName = Joi.string().optional(),
     lastName = Joi.string(),
@@ -64,7 +70,7 @@ const messages = {
 // SCHEMA's
 // create Schema
 export const createMemberSchema  = Joi.object({
-    profileImageUrl, 
+    profileImage, 
     firstName: firstName.required(), 
     middleName, 
     lastName: lastName.required(), 
@@ -90,7 +96,7 @@ export const loginMemberSchema  = Joi.object({
 
 // update schema
 export const updateMemberSchema  = Joi.object({
-    profileImageUrl, 
+    profileImage, 
     firstName: firstName.optional(), 
     middleName, 
     lastName: lastName.optional(), 
