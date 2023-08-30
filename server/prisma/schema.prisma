@@ -107,7 +107,7 @@ model Member {
   membershipStatus MembershipStatus @default(unregistered)
   employmentStatus EmploymentStatus @default(employed)
   maritalStatus    MaritalStatus    @default(single)
-  homeFellowship   HomeFellowship?
+  homeFellowship   HomeFellowship?  @default(OKE_AFA_I)
   dateOfBirth      DateTime?        @db.Date
   anniversary      DateTime?        @db.Date
   createdAt        DateTime         @default(now())
