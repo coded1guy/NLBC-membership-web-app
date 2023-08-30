@@ -12,7 +12,7 @@ import { adminScope } from './handlers/admin';
 import createAdmin from './handlers/admin/createAdmin';
 import logAdminIn from './handlers/admin/logAdminIn';
 // member authentication middleware and handler function
-import { createMemberSchema, loginMemberSchema } from './utils/validations/schemas/member';
+import { createMemberSchema, loginMemberSchema, profileImageSchema } from './utils/validations/schemas/member';
 import { memberScope } from './handlers/member';
 import createMember from './handlers/member/createMember';
 import loginMember from './handlers/member/loginMember';
@@ -20,6 +20,8 @@ import loginMember from './handlers/member/loginMember';
 import schemaValidation from './middlewares/schemaValidation';
 // error handler function
 import errorHandler from './handlers/errorHandler';
+// singleImage file middleware
+import { uploadSingleFile } from "./middlewares/multer";
 
 // initialize out express app
 const app = express();
@@ -33,7 +35,15 @@ app.get('/', (req, res) => {
     res.json({ message: "welcome to my server" });
 });
 // member auth endpoint
-app.post('/createMember', [schemaValidation(memberScope, createMemberSchema, "body")], createMember);
+app.post(
+    '/createMember', 
+    uploadSingleFile('profileImage', 'member'), 
+    [
+        schemaValidation(memberScope, profileImageSchema, "file"),
+        schemaValidation(memberScope, createMemberSchema, "body")
+    ], 
+    createMember
+    );
 app.post('/loginMember', [schemaValidation(memberScope, loginMemberSchema, "body")], loginMember);
 
 // admin auth endpoint

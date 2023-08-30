@@ -20,6 +20,9 @@ const errorHandler = (err, req, res, next) => {
         case "badInput":
             res.status(400).json({ message: 'Bad input provided.' });
             break;
+        case "multer":
+            res.status(400).json({ messsage: `Multer error: ${err.message}` });
+            break;
         case "password":
             res.status(401).json({ message: "Password provided is not correct. Try again." });
             break;
@@ -34,11 +37,17 @@ const errorHandler = (err, req, res, next) => {
             break;
         case "delete":
             res.status(404).json({ message: `Couldn't delete ${err.scope}.` });
+            break;
         case "Network":
             res.status(404).json({ message: "Check your connections and try again." });
+            break;
         case "server":
             res.status(500).json({ message: "Internal error, check back later." });
-        default:
+            break;
+        case "imageUpload":
+            res.status(500).json({ message: "An Error occured uploading your image, check your image file and try again later." });
+            break;
+            default:
             res.status(404).json({ message: err.message, error: err });
     }
 }

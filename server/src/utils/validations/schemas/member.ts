@@ -39,14 +39,7 @@ const HomeFellowship = [
 ];
 
 // default validation options
-const profileImage = Joi.object({
-    // Allowed image type
-    type: Joi.string().valid('image/jpeg', 'image/jpg', 'image/png').required(),
-
-    // max image size
-    size: Joi.number().max(5 * 1024 * 1024).required(),
-}).optional(),
-    firstName = Joi.string(),
+const firstName = Joi.string(),
     middleName = Joi.string().optional(),
     lastName = Joi.string(),
     age = Joi.number().optional(),
@@ -70,7 +63,6 @@ const messages = {
 // SCHEMA's
 // create Schema
 export const createMemberSchema  = Joi.object({
-    profileImage, 
     firstName: firstName.required(), 
     middleName, 
     lastName: lastName.required(), 
@@ -96,7 +88,6 @@ export const loginMemberSchema  = Joi.object({
 
 // update schema
 export const updateMemberSchema  = Joi.object({
-    profileImage, 
     firstName: firstName.optional(), 
     middleName, 
     lastName: lastName.optional(), 
@@ -111,3 +102,13 @@ export const updateMemberSchema  = Joi.object({
     dateOfBirth, 
     anniversary 
 });
+
+// profile Image Schema
+export const profileImageSchema = Joi.object({
+    fieldname: Joi.string().valid('profileImage').required(),
+    originalname: Joi.string().optional(),
+    encoding: Joi.string().valid('7bit', '8bit', 'binary').required(),
+    mimetype: Joi.string().valid('image/jpeg', 'image/jpg', 'image/png').required(),
+    buffer: Joi.binary().required(),
+    size: Joi.number().max(5 * 1024 * 1024).required(), // Max size of 5MB
+}).optional();

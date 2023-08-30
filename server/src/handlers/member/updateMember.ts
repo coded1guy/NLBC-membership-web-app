@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import prisma from "../../db";
+import uploadProfileImage from "../../utils/uploads/profileImage";
 import { defineError, defineCatchType } from "../../utils/defineError";
 import { memberScope } from ".";
 
@@ -9,18 +10,31 @@ const updateMember = async (req, res, next) => {
     const { id } = req.params;
     let requestBody:object = {};
     let member:object | null, where:Prisma.MemberWhereUniqueInput;
+    let profileImageUrl;
 
-    // destructuring required input values from the req.body
-    const { 
-        profileImageUrl, firstName, middleName, lastName, age, 
-        email, phoneNumber, address, password, membershipStatus, 
-        employmentStatus, maritalStatus, dateOfBirth, anniversary 
-    } = req.body;
-    
     // simple function for error handling while querying the db
     const sendError = function (type, error) {
         error = defineError(memberScope, type, error);
         next(error);
+    }
+    
+    // destructuring required input values from the req.body
+    const { 
+        firstName, middleName, lastName, age, 
+        email, phoneNumber, address, password, membershipStatus, 
+        employmentStatus, maritalStatus, dateOfBirth, anniversary 
+    } = req.body;
+
+    // If req.file is present, handle the upload to cloudinary
+    if(req.file) {
+        try {
+            profileImageUrl = await uploadProfileImage(req.file.buffer, `${firstName}-${lastName}-profile-image`);
+            if(!profileImageUrl) {
+                throw new Error("Didn't get the profile Image url.");
+            }
+        } catch(e) {
+            return sendError("imageUpload", e);
+        }
     }
 
     // checking through the allowed inputs
@@ -32,7 +46,6 @@ const updateMember = async (req, res, next) => {
     if(email) requestBody["email"] = email;
     if(phoneNumber) requestBody["phoneNumber"] = phoneNumber;
     if(address) requestBody["address"] = address;
-    if(password) requestBody["password"] = password;
     if(employmentStatus) requestBody["employmentStatus"] = employmentStatus;
     if(maritalStatus) requestBody["maritalStatus"] = maritalStatus;
     if(dateOfBirth) requestBody["dateOfBirth"] = dateOfBirth;
@@ -53,8 +66,7 @@ const updateMember = async (req, res, next) => {
             data: requestBody
         })
     } catch(e) {
-        sendError(defineCatchType(e, "update"), e);
-        return;
+        return sendError(defineCatchType(e, "update"), e);
     }
 
     // checking if there is a need for the user to re-login
@@ -65,8 +77,7 @@ const updateMember = async (req, res, next) => {
     } else {
         login: false;
     }
-    res.status(200).json({ message: `Updated member successfully.${extraUpdateMsg}`, login, member: member });
-    return;
+    return res.status(200).json({ message: `Updated member successfully.${extraUpdateMsg}`, login, member: member });
 }
 
 export default updateMember;
