@@ -1,6 +1,7 @@
 import prisma from "../../db";
 import { defineError, defineCatchType } from "../../utils/defineError";
 import { adminScope } from ".";
+import filterObject from "../../utils/filterObject";
 
 // Handler for the super admin to get an admin
 export const getAnAdmin = async(req, res, next) => {
@@ -20,20 +21,17 @@ export const getAnAdmin = async(req, res, next) => {
             where: { id }
         })
         if(admin === null) {
-            sendError("id", null);
-            return;
+            return sendError("id", null);
         }
     } catch(e) {
-        sendError(defineCatchType(e, "get"), e);
-        return;
+        return sendError(defineCatchType(e, "get"), e);
     }
 
     // success output
-    res.status(200).json({
+    return res.status(200).json({
         message: "Admin was gotten successfully.",
-        data: admin
+        data: filterObject(admin)
     });
-    return;
 }
 
 export default getAnAdmin;

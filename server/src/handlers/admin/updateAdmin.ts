@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import prisma from "../../db";
 import { defineError, defineCatchType } from "../../utils/defineError";
 import { adminScope } from ".";
+import filterObject from "../../utils/filterObject";
 
 // Handler for admin to update themselve
 const updateAdmin = async (req, res, next) => {
@@ -42,8 +43,7 @@ const updateAdmin = async (req, res, next) => {
             data: requestBody
         })
     } catch(e) {
-        sendError(defineCatchType(e, "update"), e);
-        return;
+        return sendError(defineCatchType(e, "update"), e);
     }
 
     // checking if there is a need for the user to re-login
@@ -54,8 +54,10 @@ const updateAdmin = async (req, res, next) => {
     } else {
         login: false;
     }
-    res.status(200).json({ message: `Updated admin successfully.${extraUpdateMsg}`, login, admin: admin });
-    return;
+    return res.status(200).json({ 
+        message: `Updated admin successfully.${extraUpdateMsg}`, 
+        login, admin: filterObject(admin)
+    });
 }
 
 export default updateAdmin;

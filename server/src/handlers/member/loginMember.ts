@@ -2,12 +2,13 @@ import { Prisma } from "@prisma/client";
 import { comparePassword, createJWT } from "../../utils/auth";
 import prisma from "../../db";
 import { defineError, defineCatchType } from "../../utils/defineError";
+import filterObject from "../../utils/filterObject";
 import { memberScope } from ".";
 
 // Handler for loginMember route
 const loginMember = async (req, res, next) => {
     // declaring and initializing variables
-    let member:object | null, currentMember:object;
+    let member:object | null;
     let where:Prisma.MemberWhereUniqueInput;
     let loginType:string = "email";
 
@@ -70,13 +71,14 @@ const loginMember = async (req, res, next) => {
     } else {
         memberFullName = `${member["firstName"]} ${member["lastName"]}`;
     }
-
+ 
     // success output
-    res.json({ 
+    return res.status(200).json({ 
         message: `member, ${memberFullName} is logged in successfully.`, 
-        data: { token: createJWT(member, "member"), member: currentMember } 
+        data: { 
+            token: createJWT(member, "member"), 
+            member: filterObject(member, ["password", "createdAt", "updatedAt"]) 
+        } 
     })
-    return;
 }
-
 export default loginMember;

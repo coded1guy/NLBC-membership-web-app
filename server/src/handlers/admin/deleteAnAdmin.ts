@@ -1,6 +1,7 @@
 import { adminScope } from ".";
 import prisma from "../../db";
 import { defineError, defineCatchType } from "../../utils/defineError";
+import filterObject from "../../utils/filterObject";
 
 // Handler for the super admin to delete an admin
 const deleteAnAdmin = async(req, res, next) => {
@@ -32,9 +33,8 @@ const deleteAnAdmin = async(req, res, next) => {
     // success output
     res.status(200).json({
         message: "Admin was deleted successfully.",
-        data: admin
+        data: filterObject(admin)
     });
-    return;
 }
 
 export default deleteAnAdmin;

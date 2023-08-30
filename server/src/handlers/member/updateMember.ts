@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import prisma from "../../db";
 import uploadProfileImage from "../../utils/uploads/profileImage";
 import { defineError, defineCatchType } from "../../utils/defineError";
+import filterObject from "../../utils/filterObject";
 import { memberScope } from ".";
 
 // Handler for member to update themselve
@@ -77,7 +78,10 @@ const updateMember = async (req, res, next) => {
     } else {
         login: false;
     }
-    return res.status(200).json({ message: `Updated member successfully.${extraUpdateMsg}`, login, member: member });
+    return res.status(200).json({ 
+        message: `Updated member successfully.${extraUpdateMsg}`, 
+        login, member: filterObject(member, ["password", "createdAt", "updatedAt"]) 
+    });
 }
 
 export default updateMember;

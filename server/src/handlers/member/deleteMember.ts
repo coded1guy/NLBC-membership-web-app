@@ -1,6 +1,7 @@
 import { memberScope } from ".";
 import prisma from "../../db";
 import { defineError, defineCatchType } from "../../utils/defineError";
+import filterObject from "../../utils/filterObject";
 
 // Handler for the super admin to delete a member
 const deleteMember = async(req, res, next) => {
@@ -21,20 +22,17 @@ const deleteMember = async(req, res, next) => {
         })
 
         if(member === null) {
-            sendError("id", null);
-            return;
+            return sendError("id", null);
         }
     } catch(e) {
-        sendError(defineCatchType(e, "delete"), e);
-        return;
+        return sendError(defineCatchType(e, "delete"), e);
     }
 
     // success output
-    res.status(200).json({
+    return res.status(200).json({
         message: "member was deleted successfully.",
-        data: member
+        data: filterObject(member)
     });
-    return;
 }
 
 export default deleteMember;
