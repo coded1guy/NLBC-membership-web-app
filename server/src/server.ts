@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
+import rateLimit from 'express-rate-limit';
 
 // router 
 import router from './routes';
@@ -26,8 +27,17 @@ import { uploadSingleFile } from "./middlewares/multer";
 
 // initialize out express app
 const app = express();
+// rate limiter init
+const limiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 100,
+    keyGenerator: (req) => {
+        return req.ip;
+    },
+});
 // set up general middlewares
 app.use(cors());
+app.use(limiter);
 app.use(morgan("dev"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
