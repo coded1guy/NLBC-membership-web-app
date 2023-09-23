@@ -9,14 +9,10 @@ import router from './routes';
 import { checkAuthToken } from './middlewares';
 // admin authentication middleware and handler function
 import { createAdminSchema, loginAdminSchema } from './utils/validations/schemas/admin';
-import { adminScope } from './handlers/admin';
-import createAdmin from './handlers/admin/createAdmin';
-import logAdminIn from './handlers/admin/logAdminIn';
+import { adminScope, createAdmin, logAdminIn} from './handlers/admin';
 // member authentication middleware and handler function
 import { createMemberSchema, loginMemberSchema, profileImageSchema } from './utils/validations/schemas/member';
-import { memberScope } from './handlers/member';
-import createMember from './handlers/member/createMember';
-import loginMember from './handlers/member/loginMember';
+import { memberScope, createMember, loginMember } from './handlers/member';
 import logout from './handlers/logout';
 // general schema validation middleware
 import schemaValidation from './middlewares/schemaValidation';

@@ -1,10 +1,7 @@
 import { Router } from "express";
 // member validation schema and handler
 import { profileImageSchema, updateMemberSchema } from "../utils/validations/schemas/member";
-import { memberScope } from "../handlers/member";
-import updateMember from "../handlers/member/updateMember";
-// general id params schema
-import { userIdSchema } from "../utils/validations/schemas";
+import { memberScope, updateMember } from "../handlers/member";
 // general schema validation middleware
 import schemaValidation from '../middlewares/schemaValidation';
 // error handler

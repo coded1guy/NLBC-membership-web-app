@@ -1,12 +1,9 @@
 import { Router } from "express";
 // admin-related handler function
 import { updateAdminSchema } from "../utils/validations/schemas/admin";
-import { adminScope } from "../handlers/admin";
-import updateAdmin from "../handlers/admin/updateAdmin";
+import { adminScope, updateAdmin } from "../handlers/admin";
 // super-admin-only handler functions
-import getAnAdmin from "../handlers/admin/getAnAdmin";
-import getAllAdmin from "../handlers/admin/getAllAdmin";
-import deleteAnAdmin from "../handlers/admin/deleteAnAdmin";
+import {getAnAdmin, getAllAdmin, deleteAnAdmin} from "../handlers/admin";
 // general id params schema
 import { userIdSchema } from "../utils/validations/schemas";
 // general schema validation middleware
