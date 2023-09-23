@@ -1,4 +1,4 @@
-import { createJWT, hashPassword } from "../../utils/auth";
+import { createAuthToken, hashPassword } from "../../utils/auth";
 import prisma from "../../db";
 import { defineError, defineCatchType } from "../../utils/defineError";
 import { adminScope } from ".";
@@ -36,8 +36,11 @@ const createAdmin = async(req, res, next) => {
     }
 
     // success output
-    const token = createJWT(admin, "admin");
-    res.status(201).json({ token });
+    const userId:string = admin["id"];
+    res.status(201).json({ 
+        message: "Created new admin.",
+        data: { token: createAuthToken(userId) }
+     });
     return;
 }
 

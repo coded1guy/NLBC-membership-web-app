@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { comparePassword, createJWT } from "../../utils/auth";
+import { comparePassword, createAuthToken } from "../../utils/auth";
 import prisma from "../../db";
 import { defineError, defineCatchType } from "../../utils/defineError";
 import { adminScope } from ".";
@@ -93,10 +93,11 @@ const logAdminIn = async (req, res, next) => {
         return;
     };
 
+    const userId:string = admin["id"];
     // success output
     res.json({ 
-        message: `admin ${admin["username"]} is logged in successfully.`, 
-        data: { token: createJWT(admin, "admin"), admin: currentAdmin } 
+        message: `Admin ${admin["username"]} is logged in successfully.`, 
+        data: { token: createAuthToken(userId), admin: currentAdmin } 
     })
     return;
 }

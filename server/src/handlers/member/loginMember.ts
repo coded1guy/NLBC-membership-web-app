@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { comparePassword, createJWT } from "../../utils/auth";
+import { comparePassword, createAuthToken } from "../../utils/auth";
 import prisma from "../../db";
 import { defineError, defineCatchType } from "../../utils/defineError";
 import filterObject from "../../utils/filterObject";
@@ -72,11 +72,12 @@ const loginMember = async (req, res, next) => {
         memberFullName = `${member["firstName"]} ${member["lastName"]}`;
     }
  
+    const userId = member["id"];
     // success output
     return res.status(200).json({ 
-        message: `member, ${memberFullName} is logged in successfully.`, 
+        message: `Member, ${memberFullName} is logged in successfully.`, 
         data: { 
-            token: createJWT(member, "member"), 
+            token: createAuthToken(userId), 
             member: filterObject(member, ["password", "createdAt", "updatedAt"]) 
         } 
     })

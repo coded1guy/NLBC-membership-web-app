@@ -5,7 +5,7 @@ import morgan from 'morgan';
 // router 
 import router from './routes';
 // utils function
-import { checkAuthorization } from './utils/auth';
+import { checkAuthToken } from './middlewares';
 // admin authentication middleware and handler function
 import { createAdminSchema, loginAdminSchema } from './utils/validations/schemas/admin';
 import { adminScope } from './handlers/admin';
@@ -16,6 +16,7 @@ import { createMemberSchema, loginMemberSchema, profileImageSchema } from './uti
 import { memberScope } from './handlers/member';
 import createMember from './handlers/member/createMember';
 import loginMember from './handlers/member/loginMember';
+import logout from './handlers/logout';
 // general schema validation middleware
 import schemaValidation from './middlewares/schemaValidation';
 // error handler function
@@ -51,7 +52,9 @@ app.post('/createAdmin', [schemaValidation(adminScope, createAdminSchema, "body"
 app.post('/logAdminIn', [schemaValidation(adminScope, loginAdminSchema, "body")], logAdminIn);
 
 // entry-point into the api endpoint. This need JWT-token for authorization.
-app.use('/api', checkAuthorization, router);
+app.use('/api', checkAuthToken, router);
+// logout handler
+app.get('/logout', checkAuthToken, logout);
 // setting the error handler globally
 app.use(errorHandler);
 

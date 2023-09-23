@@ -23,6 +23,11 @@ const errorHandler = (err, req, res, next) => {
         case "multer":
             res.status(400).json({ messsage: `Multer error: ${err.message}` });
             break;
+        case "logout":
+            res.status(400).json({ 
+                message: "Error occurred while logging you out, check your connection and try again." 
+            })
+        break;
         case "password":
             res.status(401).json({ message: "Password provided is not correct. Try again." });
             break;
