@@ -84,9 +84,8 @@ const updateMember = async (req, res, next) => {
   }
 
   // checking if there is a need for the user to re-login
-  let extraUpdateMsg: string = '';
   return res.status(200).json({
-    message: `Updated member successfully.${extraUpdateMsg}`,
+    message: `Updated member successfully.`,
     data: member,
   });
 };
