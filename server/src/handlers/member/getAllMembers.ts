@@ -1,68 +1,127 @@
-import prisma from "../../db";
-import { defineError, defineCatchType } from "../../utils/defineError";
-import { memberScope } from ".";
+import prisma from '../../db';
+import { defineError, defineCatchType } from '../../utils/defineError';
+import { memberScope, memberReturnData } from '.';
 
-const getAllMembers = async(req, res, next) => {
-    // declaring and initializing variables
-    let admin, adminCount:number, lastId:string | null = null;
-    let { limit, cursorId } = req.query;
-    limit = +limit;
+const getAllMembers = async (req, res, next) => {
+  // declaring and initializing variables
+  let members, membersCount: number;
+  let lastId: string | null = null;
 
-    // simple function for error handling while querying the db
-    const sendError = function (type, error) {
-        error = defineError(memberScope, type, error);
-        next(error);
+  // query parameters
+  let {
+    limit,
+    cursorId,
+    firstName,
+    middleName,
+    lastName,
+    age,
+    email,
+    phoneNumber,
+    address,
+    membershipStatus,
+    employmentStatus,
+    maritalStatus,
+    homeFellowship,
+    dateOfBirth,
+    anniversary,
+  } = req.query;
+
+  // type conversion
+  age = +age;
+  limit = +limit;
+
+  // all filter parameters
+  let allFilterItems = [
+    { firstName },
+    { middleName },
+    { lastName },
+    { age },
+    { email },
+    { phoneNumber },
+    { address },
+    { membershipStatus },
+    { employmentStatus },
+    { maritalStatus },
+    { homeFellowship },
+    { dateOfBirth },
+    { anniversary },
+  ];
+
+  // filters out fields that have not been filled
+  allFilterItems = allFilterItems.filter((filterItem) => {
+    const itemValues = Object.values(filterItem);
+    if (itemValues[0]) {
+      return filterItem;
     }
+  });
 
-    // defining the database query options
-    let otherOptions:object = {};
-    if(cursorId) {
-        otherOptions = {
-            skip: 1,
-            cursor: { id: cursorId },
-            orderBy: { id: 'asc' },
-        };
-    } else {
-        otherOptions = {
-            orderBy: { id: 'asc' },
-        }
+  // setting up the where property of the prisma call
+  let whereOptions: object = {};
+  if (allFilterItems.length === 1) {
+    whereOptions = {
+      where: {
+        ...allFilterItems[0],
+      },
+    };
+  } else if (allFilterItems.length > 1) {
+    whereOptions = {
+      where: {
+        AND: allFilterItems,
+      },
+    };
+  }
+
+  // simple function for error handling while querying the db
+  const sendError = function (type, error) {
+    error = defineError(memberScope, type, error);
+    next(error);
+  };
+
+  // defining the database query options
+  let cursorOptions: object = {};
+  if (cursorId) {
+    cursorOptions = {
+      cursor: { id: cursorId },
+    };
+  }
+  console.log(cursorOptions);
+
+  // querying the database
+  try {
+    [members, membersCount] = await prisma.$transaction([
+      prisma.member.findMany({
+        take: limit | 20,
+        skip: 1,
+        orderBy: { createdAt: 'desc' },
+        select: { ...memberReturnData },
+        ...cursorOptions,
+        ...whereOptions,
+      }),
+      prisma.member.count(),
+    ]);
+
+    if (members === null || members.length < 1) {
+      sendError('noList', null);
+      return;
     }
-    console.log(otherOptions);
-
-    // querying the database
-    try {
-        [admin, adminCount] = await prisma.$transaction([
-            prisma.admin.findMany({
-                take: limit | 10,
-                ...otherOptions
-            }),
-            prisma.admin.count(),
-        ])
-
-        if(admin === null || admin.length < 1) {
-            sendError("noList", null);
-            return;
-        }
-    } catch(e) {
-        sendError(defineCatchType(e, "get"), e);
-        return;
-    }
-
-    // get the last id of the set of admin returned to get the cursor for next page
-    if(admin.length === limit && admin.length < adminCount) {
-        lastId = admin[admin.length - 1].id;
-    }
-
-    // success output
-    res.status(200).json({
-        message: "Admin list was gotten successfully.",
-        result: {
-            total: adminCount,
-            lastId,
-            data: admin
-        }
-    });
+  } catch (e) {
+    sendError(defineCatchType(e, 'get'), e);
     return;
-}
+  }
 
+  // get the last id of the set of members returned to get the cursor for next page
+  if (members.length === limit && members.length < membersCount) {
+    lastId = members[members.length - 1].id;
+  }
+
+  // success output
+  return res.status(200).json({
+    message: 'members list was gotten successfully.',
+    result: {
+      total: membersCount,
+      lastId,
+      data: members,
+    },
+  });
+};
 export default getAllMembers;
