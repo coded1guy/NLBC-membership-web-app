@@ -47,10 +47,22 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 // endpoint to test server availability
 app.get('/', (req, res) => {
-  res.json({ message: 'welcome to my server' });
+  res.json({
+    message: 'welcome to the NLBC membership management Platform API',
+  });
+});
+// api health
+app.get('/health', (req, res) => {
+  return res.status(200).json({
+    message: 'API ok',
+    version: '1.0',
+  });
 });
 app.post('/test-email', async (req, res) => {
   const emails = req.body.email;
+  if (!emails) {
+    return res.status(400).send('email list required');
+  }
   const emailArr = emails.split(',');
   let emailList = [];
   emailArr.forEach((emailAddress) => {
@@ -59,6 +71,7 @@ app.post('/test-email', async (req, res) => {
         to: `${emailAddress}`,
         title: 'test mail',
         body: "let's test the email",
+        isHTML: false,
       })
     );
   });

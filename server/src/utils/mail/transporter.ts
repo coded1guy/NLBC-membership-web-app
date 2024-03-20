@@ -2,11 +2,11 @@ import nodemailer from 'nodemailer';
 import { google } from 'googleapis';
 
 const oAuth2Client = new google.auth.OAuth2(
-  process.env.GMAIL_CLIENT_ID,
-  process.env.GMAIL_CLIENT_SECRET,
+  process.env.EMAIL_CLIENT_ID,
+  process.env.EMAIL_CLIENT_SECRET,
   'https://developers.google.com/oauthplayground'
 );
-oAuth2Client.setCredentials({ refresh_token: process.env.GMAIL_REFRESH_TOKEN });
+oAuth2Client.setCredentials({ refresh_token: process.env.EMAIL_REFRESH_TOKEN });
 
 const createTransporter = async () => {
   try {
@@ -17,11 +17,11 @@ const createTransporter = async () => {
       secure: true,
       auth: {
         type: 'OAuth2',
-        user: process.env.GMAIL_USER_EMAIL,
+        user: process.env.EMAIL_USER_EMAIL,
         accessToken,
-        clientId: process.env.GMAIL_CLIENT_ID,
-        clientSecret: process.env.GMAIL_CLIENT_SECRET,
-        refreshToken: process.env.GMAIL_REFRESH_TOKEN,
+        clientId: process.env.EMAIL_CLIENT_ID,
+        clientSecret: process.env.EMAIL_CLIENT_SECRET,
+        refreshToken: process.env.EMAIL_REFRESH_TOKEN,
       },
     });
     return transporter;
@@ -34,22 +34,26 @@ interface emailTemplate {
   to: string;
   title: string;
   body: string;
+  isHTML: boolean;
 }
 export const sendEmail = async (
-  { to, title, body }: emailTemplate,
+  { to, title, body, isHTML }: emailTemplate,
   noreply: boolean = true
 ) => {
   try {
+    let mailBody = {};
+    isHTML ? (mailBody['html'] = body) : (mailBody['text'] = body);
+
     const mailOptions = {
-      from: process.env.GMAIL_USER_FROM_EMAIL,
+      from: process.env.EMAIL_USER_FROM_EMAIL,
       to,
       replyTo: `${
         noreply
-          ? process.env.GMAIL_USER_NO_REPLY
-          : process.env.GMAIL_USER_FROM_EMAIL
+          ? process.env.EMAIL_USER_NO_REPLY
+          : process.env.EMAIL_USER_FROM_EMAIL
       }`,
       subject: title,
-      text: body,
+      ...mailBody,
     };
     let emailTransporter = await createTransporter();
     await emailTransporter.sendMail(mailOptions, (err, info) => {

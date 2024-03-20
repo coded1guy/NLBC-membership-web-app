@@ -114,6 +114,20 @@ model Member {
   updatedAt        DateTime         @updatedAt
 }
 
+enum resetScope {
+  Admin
+  Member
+}
+
+model ResetPassword {
+  id        String     @id @default(uuid())
+  token     String     @unique
+  email     String     @unique @db.VarChar(320)
+  scope     resetScope @default(Member)
+  expiry    BigInt
+  createdAt DateTime   @default(now())
+}
+
 model Tokens {
   id        String   @id @default(uuid())
   token     String   @unique
